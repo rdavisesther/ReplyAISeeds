@@ -473,7 +473,7 @@ select option {
 </div>
 
 <script>
-const API_URL = "http://127.0.0.1:8000/api/generate-reply";
+const API_URL = "/api/generate-reply";
 
 let replyCount = 0;
 const history = [];
@@ -553,8 +553,8 @@ Write only the reply.
 
     const data = await res.json();
 
-    if (data.error) {
-      throw new Error(data.error);
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "API error");
     }
 
     const reply = data.reply?.trim();
@@ -574,7 +574,7 @@ Write only the reply.
 
   } catch (error) {
     console.error(error);
-    showError("Backend/API error. Make sure Python server is running.");
+    showError("API error. Check Vercel Environment Variable GEMINI_API_KEY.");
   } finally {
     setLoading(false);
   }
