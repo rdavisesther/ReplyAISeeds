@@ -1,17 +1,12 @@
 {
-  "functions": {
-    "api/generate-reply.py": {
-      "runtime": "python3.11"
-    }
-  },
-  "routes": [
+  "rewrites": [
     {
-      "src": "/api/generate-reply",
-      "dest": "api/generate-reply.py"
+      "source": "/api/generate-reply",
+      "destination": "/api/generate-reply.py"
     },
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
