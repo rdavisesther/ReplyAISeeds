@@ -1,19 +1,13 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/generate-reply.py",
-      "use": "@vercel/python"
-    },
-    {
-      "src": "index.html",
-      "use": "@vercel/static"
+  "functions": {
+    "api/generate-reply.py": {
+      "runtime": "python3.11"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/generate-reply",
-      "dest": "/api/generate-reply.py"
+      "dest": "api/generate-reply.py"
     },
     {
       "src": "/(.*)",
