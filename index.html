@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seeds Warmup — AI Reply</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #0d0d0f;
+  --surface: #141417;
+  --surface2: #1c1c21;
+  --border: rgba(255,255,255,0.07);
+  --border-hover: rgba(255,255,255,0.14);
+  --accent: #b6f542;
+  --text: #f0efea;
+  --text-muted: #6b6b72;
+  --text-secondary: #9b9ba3;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 10%, rgba(182,245,66,0.04), transparent 60%),
+    radial-gradient(ellipse 40% 40% at 10% 90%, rgba(100,80,255,0.05), transparent 60%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+}
+
+.layout {
+  max-width: 740px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.header-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(182,245,66,0.06);
+  border: 0.5px solid rgba(182,245,66,0.2);
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 16px;
+}
+
+.header-tag::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.3; }
+}
+
+h1 {
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+h1 span {
+  color: var(--accent);
+}
+
+.subtitle {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.card {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 12px;
+}
+
+.card:hover {
+  border-color: var(--border-hover);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.card-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.step-badge {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  background: rgba(182,245,66,0.06);
+  border: 0.5px solid rgba(182,245,66,0.15);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  resize: vertical;
+  min-height: 160px;
+  outline: none;
+  line-height: 1.7;
+}
+
+textarea:focus {
+  border-color: rgba(182,245,66,0.3);
+}
+
+textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.char-counter {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: 6px;
+}
+
+.options-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .options-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.option-label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+select {
+  width: 100%;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+}
+
+select option {
+  background: #1c1c21;
+}
+
+.context-input {
+  min-height: 60px;
+  resize: none;
+}
+
+.btn-generate {
+  width: 100%;
+  padding: 16px;
+  background: var(--accent);
+  color: #0d0d0f;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.btn-generate:hover {
+  opacity: 0.9;
+}
+
+.btn-generate:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: #0d0d0f;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 8px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-msg {
+  display: none;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #ff6b6b;
+  background: rgba(255,107,107,0.08);
+  border: 0.5px solid rgba(255,107,107,0.2);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.error-msg.visible {
+  display: block;
+}
+
+.result-card {
+  display: none;
+  background: var(--surface);
+  border: 0.5px solid rgba(182,245,66,0.2);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+}
+
+.result-card.visible {
+  display: block;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.result-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+}
+
+.badge-ready {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--accent);
+  background: rgba(182,245,66,0.1);
+  border: 0.5px solid rgba(182,245,66,0.25);
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+.reply-text {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-height: 80px;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.btn-action {
+  padding: 8px 14px;
+  background: var(--surface2);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-family: var(--mono);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.copy-feedback {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  margin-top: 8px;
+  height: 16px;
+}
+
+.history-section {
+  margin-top: 32px;
+}
+
+.history-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.history-item {
+  background: var(--surface);
+  border: 0.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+.history-item-preview {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-meta {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.footer {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 0.5px solid var(--border);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+</style>
+</head>
+
+<body>
+<div class="layout">
+
+  <div class="header">
+    <div class="header-tag">seeds warmup · ai</div>
+    <h1>Auto-reply<br><span>generator</span></h1>
+    <p class="subtitle">
+      Paste received email → AI writes a natural human reply<br>
+      for your seed warmup sequences
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Received email</span>
+      <span class="step-badge">01</span>
+    </div>
+    <textarea id="emailInput" placeholder="Paste the email content you received..."></textarea>
+    <div class="char-counter"><span id="charCount">0</span> chars</div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-label">Settings</span>
+      <span class="step-badge">02</span>
+    </div>
+
+    <div class="options-row">
+      <div>
+        <span class="option-label">Tone</span>
+        <select id="tone">
+          <option value="friendly">Friendly & casual</option>
+          <option value="professional">Professional</option>
+          <option value="short">Very short</option>
+          <option value="warm">Warm & personal</option>
+          <option value="curious">Curious & engaging</option>
+        </select>
+      </div>
+
+      <div>
+        <span class="option-label">Language</span>
+        <select id="lang">
+          <option value="english">English</option>
+          <option value="french">French</option>
+          <option value="darija">Darija</option>
+          <option value="spanish">Spanish</option>
+          <option value="italian">Italian</option>
+          <option value="german">German</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top: 12px;">
+      <span class="option-label">Context optional</span>
+      <textarea class="context-input" id="contextInput" placeholder="Example: I'm replying as a SaaS founder..."></textarea>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generateReply()">
+    <span id="btnText">Generate reply</span>
+    <span id="btnIcon">→</span>
+  </button>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <div class="result-card" id="resultCard">
+    <div class="result-header">
+      <span class="result-label">AI reply ready</span>
+      <span class="badge-ready">✓ generated</span>
+    </div>
+
+    <div class="reply-text" id="replyOutput"></div>
+
+    <div class="action-row">
+      <button class="btn-action" onclick="copyReply()">⎘ copy</button>
+      <button class="btn-action" onclick="generateReply()">↺ regenerate</button>
+      <button class="btn-action" onclick="clearAll()">✕ clear</button>
+    </div>
+
+    <div class="copy-feedback" id="copyFeedback"></div>
+  </div>
+
+  <div class="history-section" id="historySection" style="display:none;">
+    <div class="history-title">Recent replies</div>
+    <div id="historyList"></div>
+  </div>
+
+  <div class="footer">
+    <span>seeds-warmup-ai · v1.0</span>
+    <span id="replyCount">0 replies generated</span>
+  </div>
+
+</div>
+
+<script>
+const API_URL = "http://127.0.0.1:8000/api/generate-reply";
+
+let replyCount = 0;
+const history = [];
+
+const toneMap = {
+  friendly: "friendly and casual, like texting a colleague",
+  professional: "professional and concise",
+  short: "very short, 2 to 3 sentences maximum",
+  warm: "warm, personal, and empathetic",
+  curious: "curious, engaged, asking a natural follow-up question"
+};
+
+const langMap = {
+  english: "English",
+  french: "French",
+  darija: "Moroccan Darija",
+  spanish: "Spanish",
+  italian: "Italian",
+  german: "German"
+};
+
+document.getElementById("emailInput").addEventListener("input", function () {
+  document.getElementById("charCount").textContent = this.value.length;
+});
+
+async function generateReply() {
+  const email = document.getElementById("emailInput").value.trim();
+  const tone = document.getElementById("tone").value;
+  const lang = document.getElementById("lang").value;
+  const context = document.getElementById("contextInput").value.trim();
+
+  if (!email) {
+    showError("Please paste an email first.");
+    return;
+  }
+
+  hideError();
+  setLoading(true);
+  document.getElementById("resultCard").classList.remove("visible");
+
+  const contextPart = context ? `\n\nContext about the replier: ${context}` : "";
+
+  const prompt = `
+You are helping with email warmup for email deliverability improvement.
+
+Your task:
+Read the email below and write a natural, human-like reply that continues the conversation realistically.
+
+Rules:
+- Tone: ${toneMap[tone]}
+- Language: ${langMap[lang]}
+- Sound like a real person
+- Do not sound like a bot
+- Do not use templates
+- No generic filler phrases like "I hope this email finds you well"
+- No subject line
+- No signature
+- Just the reply body text
+${contextPart}
+
+Email received:
+---
+${email}
+---
+
+Write only the reply.
+`;
+
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await res.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const reply = data.reply?.trim();
+
+    if (!reply) {
+      throw new Error("Empty response from AI");
+    }
+
+    document.getElementById("replyOutput").textContent = reply;
+    document.getElementById("resultCard").classList.add("visible");
+
+    replyCount++;
+    document.getElementById("replyCount").textContent =
+      `${replyCount} repl${replyCount === 1 ? "y" : "ies"} generated`;
+
+    addToHistory(email, reply, tone, lang);
+
+  } catch (error) {
+    console.error(error);
+    showError("Backend/API error. Make sure Python server is running.");
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(state) {
+  const btn = document.getElementById("generateBtn");
+  const text = document.getElementById("btnText");
+  const icon = document.getElementById("btnIcon");
+
+  btn.disabled = state;
+
+  if (state) {
+    text.textContent = "Generating...";
+    icon.innerHTML = '<span class="spinner"></span>';
+  } else {
+    text.textContent = "Generate reply";
+    icon.textContent = "→";
+  }
+}
+
+function copyReply() {
+  const text = document.getElementById("replyOutput").textContent;
+
+  navigator.clipboard.writeText(text).then(() => {
+    const fb = document.getElementById("copyFeedback");
+    fb.textContent = "✓ Copied to clipboard";
+    setTimeout(() => {
+      fb.textContent = "";
+    }, 2000);
+  });
+}
+
+function clearAll() {
+  document.getElementById("emailInput").value = "";
+  document.getElementById("contextInput").value = "";
+  document.getElementById("charCount").textContent = "0";
+  document.getElementById("resultCard").classList.remove("visible");
+  hideError();
+}
+
+function showError(msg) {
+  const el = document.getElementById("errorMsg");
+  el.textContent = msg;
+  el.classList.add("visible");
+}
+
+function hideError() {
+  document.getElementById("errorMsg").classList.remove("visible");
+}
+
+function addToHistory(email, reply, tone, lang) {
+  history.unshift({
+    email,
+    reply,
+    tone,
+    lang,
+    time: new Date()
+  });
+
+  if (history.length > 5) {
+    history.pop();
+  }
+
+  renderHistory();
+}
+
+function renderHistory() {
+  const section = document.getElementById("historySection");
+  const list = document.getElementById("historyList");
+
+  if (history.length === 0) {
+    section.style.display = "none";
+    return;
+  }
+
+  section.style.display = "block";
+
+  list.innerHTML = history.map((h, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <div class="history-item-preview">${escapeHtml(h.reply.substring(0, 80))}...</div>
+      <div class="history-item-meta">${h.tone} · ${h.lang} · ${h.time.toLocaleTimeString()}</div>
+    </div>
+  `).join("");
+}
+
+function loadHistory(i) {
+  const h = history[i];
+
+  document.getElementById("emailInput").value = h.email;
+  document.getElementById("charCount").textContent = h.email.length;
+  document.getElementById("tone").value = h.tone;
+  document.getElementById("lang").value = h.lang;
+  document.getElementById("replyOutput").textContent = h.reply;
+  document.getElementById("resultCard").classList.add("visible");
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>
